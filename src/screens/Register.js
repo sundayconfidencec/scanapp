@@ -2,21 +2,72 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, TextInput } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import Constants from 'expo-constants';
-import { MaterialIcons } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
+import { connect } from 'react-redux';
+import { SignupAccount, signupError } from "../redux/actions/AuthActions";
 
-function Register({navigation}) {
+function Register({ auth, SignupAccount, signupError }) {
   const [image, setImage] = useState(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('');
   const [twitter, setTwitter] = useState('');
   const [linkedin, setLinkedin] = useState('');
-
 //   const handleSubmit = () => {
    
 //   };
+
+
+
+const handleUpdateState = (name, value) => {
+  switch (name) {
+    case "name":
+      setName(value);
+      break;
+    case "email":
+      setEmail(value);
+      break;
+    case "password":
+      setPassword(value);
+      break;
+    case "confirmPassword":
+      setConfirmPassword(value);
+      break;
+    case "role":
+      setRole(value);
+      break;
+    case "twitter":
+      setTwitter(value);
+      break;
+    case "linkedin":
+      setLinkedin(value);
+      break;
+    default:
+      break;
+  }
+};
+
+const handleSubmit = () => {
+  if (password !== confirmPassword) {
+    signupError("Passwords did not match!");
+    return;
+  }
+
+  SignupAccount(email, password);
+
+  
+
+  // Reset the input fields after successful registration
+  setName("");
+  setEmail("");
+  setPassword("");
+  setConfirmPassword("");
+  setRole("");
+  setTwitter("");
+  setLinkedin("");
+};
 
   async function getPermissionAsync() {
     if (Constants.platform.ios) {
@@ -79,12 +130,15 @@ function Register({navigation}) {
     </View>
    
     <View style={styles.container}>
+    {auth.error.signup && 
+        <Text style={{color: "red"}}>{auth.error.signup}</Text>
+          }
     <View style={styles.div}>
     <Text style={styles.label}>Full Name</Text>
       <TextInput
         style={styles.input}
         value={name}
-        onChangeText={setName}
+        onChangeText={(text) => handleUpdateState("name", text)}
         placeholder="Enter your name"
       />
     </View>
@@ -94,19 +148,29 @@ function Register({navigation}) {
       <TextInput
         style={styles.input}
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) => handleUpdateState("email", text)}
         placeholder="sunday@gmail.com"
         keyboardType="email-address"
       />
      </View>
 
    <View style={styles.div}>
-   <Text style={styles.label}>Phone Number</Text>
+   <Text style={styles.label}>Password</Text>
       <TextInput
         style={styles.input}
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-        placeholder="+233 (255) 245 190"
+        value={password}
+        onChangeText={(text) => handleUpdateState("password", text)}
+        placeholder="......"
+        keyboardType="phone-pad"
+      />
+   </View>
+   <View style={styles.div}>
+   <Text style={styles.label}>Confirm Password</Text>
+      <TextInput
+        style={styles.input}
+        value={confirmPassword}
+        onChangeText={(text) => handleUpdateState("confirmPassword", text)}
+        placeholder="......"
         keyboardType="phone-pad"
       />
    </View>
@@ -116,7 +180,7 @@ function Register({navigation}) {
       <TextInput
         style={styles.input}
         value={role}
-        onChangeText={setRole}
+        onChangeText={(text) => handleUpdateState("role", text)}
         placeholder="Software developer"
       />
      </View>
@@ -126,7 +190,7 @@ function Register({navigation}) {
       <TextInput
         style={styles.input}
         value={twitter}
-        onChangeText={setTwitter}
+        onChangeText={(text) => handleUpdateState("twitter", text)}
         placeholder="@sunday"
       />
     </View>
@@ -136,15 +200,14 @@ function Register({navigation}) {
       <TextInput
         style={styles.input}
         value={linkedin}
-        onChangeText={setLinkedin}
+        onChangeText={(text) => handleUpdateState("linkedin", text)}
         placeholder=" /sunday"
       />
      </View>
 
-      <TouchableOpacity style={styles.button}   title="register"
-        onPress={() => navigation.navigate('scanhome')}>
-        <Text style={styles.buttonText}>REGISTER</Text>
-      </TouchableOpacity>
+     <TouchableOpacity style={styles.button} title="register" onPress={handleSubmit}>
+  <Text style={styles.buttonText}>REGISTER</Text>
+</TouchableOpacity>
     </View>
     </View>
   );
@@ -176,7 +239,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: 'center',
     justifyContent:"center",
-    marginTop: 50
+    marginTop: 30
   },
   iconText: {
     color: 'goldenrod',
@@ -206,7 +269,7 @@ const styles = StyleSheet.create({
   div:{
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 30,
+    marginTop: 20,
     borderBottomWidth: 1,
     borderBottomColor:"gray",
     marginHorizontal: 20
@@ -225,4 +288,10 @@ const styles = StyleSheet.create({
 
 });
 
-export default Register;
+const mapStateToProps = (state) => {
+  return { auth:state};
+};
+
+
+export default connect(mapStateToProps, { SignupAccount, signupError })(Register);
+

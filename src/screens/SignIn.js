@@ -9,10 +9,36 @@ import {
   Image
 } from 'react-native';
 import keep from '../asset/signin.jpeg';
+import { connect } from 'react-redux';
+import { LoginAccount} from "../redux/actions/AuthActions";
 
-function SignIn({navigation}) {
+
+function SignIn({auth, LoginAccount}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+
+  const handleUpdateState = (name, value) => {
+    switch (name) {
+      case "email":
+        setEmail(value);
+        break;
+      case "password":
+        setPassword(value);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleSubmit = () => {
+    LoginAccount(email, password);
+
+    // Reset the input fields after successful registration
+    setEmail("");
+    setPassword("");
+  };
+  
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
@@ -21,6 +47,9 @@ function SignIn({navigation}) {
       </View>
       <View style={styles.container}>
         <View style={styles.loginTextContainer}>
+        {auth.error.login && 
+        <Text style={{color: "red"}}>{auth.error.login}</Text>
+          }
           <View style={styles.emaildiv}>
             <Text style={styles.email}>Email:</Text>
             <TextInput
@@ -30,10 +59,7 @@ function SignIn({navigation}) {
               autoCapitalize={false}
               autoCorrect={false}
               value={email}
-              onChangeText={(text) => {
-                console.log(text);
-                setEmail(text);
-              }}
+              onChangeText={(text) => handleUpdateState("email", text)}
             />
           </View>
           <View style={styles.passworddiv}>
@@ -46,14 +72,11 @@ function SignIn({navigation}) {
               autoCapitalize="none"
               autoCorrect={false}
               value={password}
-              onChangeText={(text) => {
-                console.log(text);
-                setPassword(text);
-              }}
+              onChangeText={(text) => handleUpdateState("password", text)}
             />
           </View>
           <TouchableOpacity style={styles.signin}  title="signin"
-        onPress={() => navigation.navigate('scanhome')}>
+       onPress={handleSubmit} >
             <Text style={styles.signintext}>SIGN IN</Text>
           </TouchableOpacity>
           <View></View>
@@ -193,4 +216,9 @@ img:{
 
 })
 
-export default SignIn;
+const mapStateToProps = (state) => {
+  return { auth:state};
+};
+
+
+export default connect(mapStateToProps, { LoginAccount})(SignIn);
